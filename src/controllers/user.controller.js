@@ -134,4 +134,30 @@ const loginUser = async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
-export { regieterUser, loginUser };
+
+const logout = async (req, res) => {
+  try {
+    await UserModel.findByIdAndUpdate(
+      req.user._id,
+      {
+        $unset: {
+          refreshToken: 1, // this removes the field from document
+        },
+      },
+      { new: true },
+    );
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+
+      .json({ success: true, message: "user logout successfully" });
+  } catch (error) {
+    console.log("logout controller error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+export { regieterUser, loginUser, logout };
