@@ -1,4 +1,4 @@
-import { UserModel } from "../models/user.model";
+import { UserModel } from "../models/user.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -42,9 +42,12 @@ const regieterUser = async (req, res) => {
   try {
     const { username, fullName, email, password, confirmPassword, avatar } =
       req.body;
+    console.log(req.body);
 
-    if (!username || !fullName || !email || !password || confirmPassword) {
-      return res.status(400).json({ success: false, message: "" });
+    if (!username || !fullName || !email || !password || !confirmPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "all field are empty" });
     }
 
     if (password !== confirmPassword) {
@@ -57,13 +60,14 @@ const regieterUser = async (req, res) => {
       $or: [{ username }, { email }],
     });
 
-    if (!existUser) {
+    if (existUser) {
       return res
         .status(400)
         .json({ success: false, message: "user already exist" });
     }
 
-    if (avatar) return; //avatar logic
+    // if (avatar) return; //avatar logic
+    console.log("first");
 
     const user = await UserModel.create({
       username,
@@ -72,6 +76,7 @@ const regieterUser = async (req, res) => {
       password,
       avatar: avatar || "",
     });
+    console.log("user", user);
 
     const createdUser = await UserModel.findById(user._id).select(
       "-password -refreshToken",
@@ -84,9 +89,11 @@ const regieterUser = async (req, res) => {
       });
     }
 
-    return res
-      .status(201)
-      .json({ success: true, message: "user registered successfully" });
+    return res.status(201).json({
+      success: true,
+      message: "user registered successfully",
+      user: createdUser,
+    });
   } catch (error) {
     console.log("registerUser controller error", error);
     return res

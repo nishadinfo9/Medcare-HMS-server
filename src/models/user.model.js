@@ -28,7 +28,6 @@ const userSchema = new Schema(
     },
     confirmPassword: {
       type: String,
-      required: [true, "confirm password is required"],
     },
     avatar: {
       type: String,
