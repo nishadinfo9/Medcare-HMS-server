@@ -2,34 +2,19 @@ import { UserModel } from "../models/user.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
-    const user = UserModel.findById(userId);
+    if (!userId) return;
+    const user = await UserModel.findById(userId);
 
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "user doesn't exist" });
-    }
     const accessToken = await user.generateAccessToken();
-    if (!accessToken) {
-      return res
-        .status(400)
-        .json({ success: false, message: "accessToken doesn't exist" });
-    }
     const refreshToken = await user.generateRefreshToken();
-    if (!refreshToken) {
-      return res
-        .status(400)
-        .json({ success: false, message: "refreshToken doesn't exist" });
-    }
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
   } catch (error) {
-    console.log(
-      "Something went wrong while generating referesh and access token",
-    );
+    console.log("Error while generating referesh and access token", error);
+    throw new error(error);
   }
 };
 
@@ -67,7 +52,6 @@ const regieterUser = async (req, res) => {
     }
 
     // if (avatar) return; //avatar logic
-    console.log("first");
 
     const user = await UserModel.create({
       username,
@@ -124,7 +108,7 @@ const loginUser = async (req, res) => {
       throw new ApiError(401, "Invalid user credentials");
     }
 
-    const { accessToken, refreshToken } = generateAccessAndRefreshToken(
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       user._id,
     );
 
