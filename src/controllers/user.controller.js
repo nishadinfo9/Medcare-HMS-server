@@ -1,5 +1,4 @@
 import { UserModel } from "../models/user.model";
-import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
