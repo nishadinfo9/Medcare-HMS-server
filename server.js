@@ -9,6 +9,10 @@ app.get("/", (req, res) => {
   res.send("Backend Running");
 });
 
+app.get("/health", (req, res) => {
+  res.json({message: 'good'})
+});
+
 connectDB()
   .then(() =>
     app.listen(port, () => {
