@@ -151,7 +151,6 @@ const logout = async (req, res) => {
       .status(200)
       .clearCookie("accessToken", options)
       .clearCookie("refreshToken", options)
-
       .json({ success: true, message: "user logout successfully" });
   } catch (error) {
     console.log("logout controller error", error);
