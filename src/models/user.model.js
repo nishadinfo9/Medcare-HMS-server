@@ -33,6 +33,11 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    role: {
+      type: String,
+      enum: ["Admin", "Doctor", "Receptionist", "Patient"],
+      required: true,
+    },
     refreshToken: {
       type: String,
       default: "",

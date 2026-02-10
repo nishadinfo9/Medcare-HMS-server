@@ -26,11 +26,24 @@ const options = {
 
 const regieterUser = async (req, res) => {
   try {
-    const { username, fullName, email, password, confirmPassword, avatar } =
-      req.body;
-    console.log(req.body);
+    const {
+      username,
+      fullName,
+      email,
+      password,
+      confirmPassword,
+      role,
+      avatar,
+    } = req.body;
 
-    if (!username || !fullName || !email || !password || !confirmPassword) {
+    if (
+      !username ||
+      !fullName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !role
+    ) {
       return res
         .status(400)
         .json({ success: false, message: "all field are empty" });
@@ -55,13 +68,13 @@ const regieterUser = async (req, res) => {
     // if (avatar) return; //avatar logic
 
     const user = await UserModel.create({
-      username,
+      username: username.replace(/\s+/g, "").toLowerCase(),
       fullName,
       email,
       password,
+      role: role,
       avatar: avatar || "",
     });
-    console.log("user", user);
 
     const createdUser = await UserModel.findById(user._id).select(
       "-password -refreshToken",

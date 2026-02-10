@@ -19,7 +19,7 @@ connectDB()
       console.log(`listening on port ${port}`);
     }),
   )
-  .catch(() => {
-    console.log("Database faild");
+  .catch((err) => {
+    console.log("Database faild", err);
     process.exit(1);
   });
