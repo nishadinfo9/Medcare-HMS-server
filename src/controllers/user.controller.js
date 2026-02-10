@@ -105,7 +105,9 @@ const loginUser = async (req, res) => {
     const isPasswordValid = await user.isPasswordCorrect(password);
 
     if (!isPasswordValid) {
-      throw new ApiError(401, "Invalid user credentials");
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid user credentials" });
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -159,4 +161,55 @@ const logout = async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
-export { regieterUser, loginUser, logout };
+
+const changeCurrentPassword = async (req, res) => {
+  try {
+    //1. get current password
+    //2. validate the password
+    //3. get newPassword and confirm password
+    //4. validate the password
+    //5. hash the password
+    //6. update the password
+
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "oldPassword, newPassword and confirmPassword not exist",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "newPassword and confirmPassword does not match",
+      });
+    }
+
+    const user = await UserModel.findOne({ _id: req.user._id });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "user doesn't exist" });
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid user credentials" });
+    }
+
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+    return res
+      .status(200)
+      .json({ success: true, message: "password changed successfully" });
+  } catch (error) {
+    console.log("changeCurrentPassword controller error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+export { regieterUser, loginUser, logout, changeCurrentPassword };
