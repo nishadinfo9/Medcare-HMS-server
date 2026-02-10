@@ -106,7 +106,9 @@ const loginUser = async (req, res) => {
     const isPasswordValid = await user.isPasswordCorrect(password);
 
     if (!isPasswordValid) {
-      throw new ApiError(401, "Invalid user credentials");
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid user credentials" });
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -160,57 +162,4 @@ const logout = async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
-
-const refreshAccessToken = async (req, res) => {
-  try {
-    const incommingRefreshToken =
-      req.cookies?.refreshToken || req.body.refreshToken;
-
-    if (!incommingRefreshToken) {
-      return res
-        .status(401)
-        .json({ success: false, message: "incomming refreshToken not exist" });
-    }
-
-    const decoded = jwt.verify(
-      incommingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-    );
-
-    if (!decoded) {
-      return res
-        .status(401)
-        .json({ success: false, message: "decoded token not match" });
-    }
-
-    const user = await UserModel.findById(decoded._id);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ success: false, message: "user does not exist" });
-    }
-
-    if (incommingRefreshToken !== user?.refreshToken) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Refresh token is expired or used" });
-    }
-
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-      user._id,
-    );
-
-    return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json({ success: true, message: "access token refreshed successfully" });
-  
-    } catch (error) {
-    console.log("access token refreshing error", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error" });
-  }
-};
-export { regieterUser, loginUser, logout, refreshAccessToken };
+export { regieterUser, loginUser, logout };
