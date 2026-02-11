@@ -4,24 +4,31 @@ import { UserModel } from "../models/user.model.js";
 export const verifyJWT = async (req, res, next) => {
   try {
     const token =
-      req.cookies?.accessToken || req.header("Authorization").split(" ")[1];
+      req.cookies?.accessToken || req?.header("Authorization")?.split(" ")[1];
 
     if (!token) {
       return res
-        .status(400)
-        .json({ success: false, message: "token does not exist" });
+        .status(401)
+        .json({ success: false, message: "Token does not exist" });
     }
 
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid or expired token" });
+    }
 
     const user = await UserModel.findOne({ _id: decoded._id }).select(
       "-password -refreshToken",
     );
 
-    if (!user) {
+    if (!user || user.isDeleted) {
       return res
         .status(401)
-        .json({ success: false, message: "Invalid Access Token" });
+        .json({ success: false, message: "Account inactive or deleted" });
     }
 
     req.user = user;
@@ -30,6 +37,6 @@ export const verifyJWT = async (req, res, next) => {
     console.log("verifyJWT error", error);
     return res
       .status(500)
-      .json({ success: false, message: "Internal server verifyJWT error" });
+      .json({ success: false, message: "Internal server error" });
   }
 };

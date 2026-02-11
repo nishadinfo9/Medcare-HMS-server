@@ -24,7 +24,7 @@ const options = {
   secure: true,
 };
 
-const regieterUser = async (req, res) => {
+const registerUser = async (req, res) => {
   try {
     const {
       username,
@@ -36,6 +36,7 @@ const regieterUser = async (req, res) => {
       avatar,
     } = req.body;
 
+    // 1️⃣ validation
     if (
       !username ||
       !fullName ||
@@ -44,35 +45,60 @@ const regieterUser = async (req, res) => {
       !confirmPassword ||
       !role
     ) {
-      return res
-        .status(400)
-        .json({ success: false, message: "all field are empty" });
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
 
     if (password !== confirmPassword) {
-      return res
-        .status(400)
-        .json({ success: false, message: "password does not match" });
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match",
+      });
     }
 
-    const existUser = await UserModel.findOne({
-      $or: [{ username }, { email }],
+    // 2️⃣ Check if user exists (including deleted)
+    const existingUser = await UserModel.findOne({
+      $or: [{ email }, { username }],
     });
 
-    if (existUser) {
-      return res
-        .status(400)
-        .json({ success: false, message: "user already exist" });
+    // 3️⃣ If exists and not deleted → block
+    if (existingUser && !existingUser.isDeleted) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
     }
 
-    // if (avatar) return; //avatar logic
+    // 4️⃣ If exists but deleted → reactivate
+    if (existingUser && existingUser.isDeleted) {
+      existingUser.isDeleted = false;
+      existingUser.deletedAt = null;
+      existingUser.password = password;
+      existingUser.fullName = fullName;
+      existingUser.role = role;
 
+      await existingUser.save();
+
+      const safeUser = existingUser.toObject();
+      delete safeUser.password;
+      delete safeUser.refreshToken;
+
+      return res.status(200).json({
+        success: true,
+        message: "Account reactivated successfully",
+        user: safeUser,
+      });
+    }
+
+    // 5️⃣ Otherwise create new user
     const user = await UserModel.create({
-      username: username.replace(/\s+/g, "").toLowerCase(),
+      username,
       fullName,
       email,
       password,
-      role: role,
+      role,
       avatar: avatar || "",
     });
 
@@ -80,23 +106,25 @@ const regieterUser = async (req, res) => {
       "-password -refreshToken",
     );
 
-    if (!createdUser) {
-      return res.status(401).json({
-        success: false,
-        message: "Something went wrong while registering the user",
-      });
-    }
-
     return res.status(201).json({
       success: true,
-      message: "user registered successfully",
+      message: "User registered successfully",
       user: createdUser,
     });
   } catch (error) {
-    console.log("registerUser controller error", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error" });
+    //handle duplicity error
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Email or username already taken",
+      });
+    }
+
+    console.error("registerUser error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
@@ -108,18 +136,21 @@ const loginUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "email and password not exist" });
     }
+    const user = await UserModel.findOne({ email }).select("+password");
 
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "user doesn't exist" });
+    if (!user || user.isDeleted) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials or account deleted",
+      });
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password);
 
     if (!isPasswordValid) {
-      throw new ApiError(401, "Invalid user credentials");
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid user credentials" });
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -276,10 +307,68 @@ const changeCurrentPassword = async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
+
+const getCurrentUser = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "got current user successfully",
+      user: req.user,
+    });
+  } catch (error) {
+    console.log("getCurrentUser controller error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "password does not exist" });
+    }
+
+    const user = await UserModel.findById(req.user._id);
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "user does not exist" });
+    }
+    console.log(password);
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if (!isPasswordValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Credentials" });
+    }
+
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "account deleted successfully" });
+  } catch (error) {
+    console.log("deleteAccount controller error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
 export {
-  regieterUser,
+  registerUser,
   loginUser,
   logout,
   refreshAccessToken,
   changeCurrentPassword,
+  getCurrentUser,
+  deleteAccount,
 };

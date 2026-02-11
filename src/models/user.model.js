@@ -8,8 +8,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "username is required"],
       trim: true,
-      unique: true,
-      index: true,
+      lowercase: true,
     },
     fullName: {
       type: String,
@@ -19,8 +18,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "email is required"],
       trim: true,
-      unique: true,
-      index: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -42,8 +40,26 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
+);
+
+userSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } },
+);
+
+userSchema.index(
+  { username: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } },
 );
 
 userSchema.pre("save", async function () {
