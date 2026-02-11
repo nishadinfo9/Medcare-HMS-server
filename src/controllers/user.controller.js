@@ -23,8 +23,6 @@ const options = {
   httpOnly: true,
   secure: true,
   sameSite: "none",
-  domain: "medcare-server.vercel.app",
-  maxAge: 15 * 60 * 1000,
 };
 
 const registerUser = async (req, res) => {
