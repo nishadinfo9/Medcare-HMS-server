@@ -22,8 +22,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 const options = {
   httpOnly: true,
   secure: true,
-  sameSite: "none",
-  domain: "medcare-pi-amber.vercel.app",
+  sameSite: "lax",
 };
 
 const registerUser = async (req, res) => {
