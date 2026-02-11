@@ -164,8 +164,8 @@ const loginUser = async (req, res) => {
     );
 
     return res
-      .cookie("accessToken", accessToken)
-      .cookie("refreshToken", refreshToken)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .status(200)
       .json({
         success: true,
