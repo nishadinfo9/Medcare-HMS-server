@@ -323,6 +323,36 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
+const updateAccount = async (req, res) => {
+  try {
+    const { fullName } = req.body;
+    if (!fullName) {
+      return res
+        .status(400)
+        .json({ success: false, message: "fullName does not exist" });
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: { fullName },
+      },
+      { new: true },
+    ).select("-password -refreshToken");
+
+    return res.status(200).json({
+      success: true,
+      message: "acoount updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.log("updateAccount controller error", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
 const deleteAccount = async (req, res) => {
   try {
     const { password } = req.body;
@@ -370,5 +400,6 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
+  updateAccount,
   deleteAccount,
 };
