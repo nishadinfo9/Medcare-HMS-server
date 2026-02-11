@@ -170,7 +170,6 @@ const loginUser = async (req, res) => {
         message: "user login successfully",
         user: loggedInUser,
         accessToken,
-        refreshToken,
       });
   } catch (error) {
     console.log("login controller error", error);
