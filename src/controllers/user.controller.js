@@ -22,7 +22,8 @@ const generateAccessAndRefreshToken = async (userId) => {
 const options = {
   httpOnly: true,
   secure: true,
-  sameSite: "lax",
+  sameSite: "none",
+  domain: "medcare-server.vercel.app",
   maxAge: 15 * 60 * 1000,
 };
 
