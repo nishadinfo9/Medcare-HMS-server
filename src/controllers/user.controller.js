@@ -21,8 +21,9 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 const options = {
   httpOnly: true,
-  secure: false,
+  secure: true,
   sameSite: "lax",
+  maxAge: 15 * 60 * 1000,
 };
 
 const registerUser = async (req, res) => {
@@ -163,8 +164,18 @@ const loginUser = async (req, res) => {
     );
 
     return res
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
       .status(200)
       .json({
         success: true,
