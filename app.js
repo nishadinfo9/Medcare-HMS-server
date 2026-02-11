@@ -9,7 +9,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.ORIGIN,
+    origin: [process.env.DEV_ORIGIN, process.env.PRODUCTION_ORIGIN],
     credentials: true,
   }),
 );
