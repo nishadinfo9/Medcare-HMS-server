@@ -13,11 +13,11 @@ import {
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 // executions
-router.route("/add").post(verifyJWT, addPatient);
-router.route("/all").get(verifyJWT, getAllPatients);
-router.route("/single/:patientId").get(verifyJWT, singlePatient);
-router.route("/update/:patientId").patch(verifyJWT, updatePatient);
-router.route("/delete/:patientId").delete(verifyJWT, deletePatient);
-router.route("/assign/:patientId").patch(verifyJWT, assignDoctor);
+router.route("/patient/add").post(verifyJWT, addPatient);
+router.route("/patient/all").get(verifyJWT, getAllPatients);
+router.route("/patient/single/:patientId").get(verifyJWT, singlePatient);
+router.route("/patient/update/:patientId").patch(verifyJWT, updatePatient);
+router.route("/patient/delete/:patientId").delete(verifyJWT, deletePatient);
+router.route("/patient/assign/:patientId").patch(verifyJWT, assignDoctor);
 
 export default router;

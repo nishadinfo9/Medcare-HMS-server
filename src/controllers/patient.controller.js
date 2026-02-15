@@ -213,6 +213,7 @@ const assignDoctor = async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
+
 export {
   addPatient,
   getAllPatients,

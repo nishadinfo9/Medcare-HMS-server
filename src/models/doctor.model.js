@@ -4,13 +4,13 @@ const doctorSchema = new Schema(
   {
     doctorName: {
       type: String,
-      requred: true,
+      required: true,
     },
     specialization: {
       type: String,
       required: true,
     },
-    contract: {
+    contact: {
       type: String,
       required: true,
     },
@@ -30,10 +30,12 @@ const doctorSchema = new Schema(
         },
       },
     ],
-    assignedPatients: {
-      type: Schema.Types.ObjectId,
-      ref: "Patient",
-    },
+    assignedPatients: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Patient",
+      },
+    ],
   },
   { timestamps: true },
 );
