@@ -244,6 +244,8 @@ const refreshAccessToken = async (req, res) => {
       user._id,
     );
 
+    console.log("access token refreshed successfully");
+
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
