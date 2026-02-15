@@ -16,5 +16,10 @@ app.use(
   }),
 );
 
+// imports
 import userRouter from "./src/routes/user.route.js";
+import patientRouter from "./src/routes/patient.route.js";
+
+// executions
 app.use("/api/v1", userRouter);
+app.use("/api/v1", patientRouter);

@@ -49,7 +49,7 @@ const patientScheme = new Schema(
       },
     ],
     assignedDoctor: {
-      type: Schema.Type.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Doctor",
     },
   },
