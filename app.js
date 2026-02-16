@@ -20,8 +20,10 @@ app.use(
 import userRouter from "./src/routes/user.route.js";
 import patientRouter from "./src/routes/patient.route.js";
 import doctortRouter from "./src/routes/doctor.route.js";
+import appointmentRouter from "./src/routes/appointment.route.js";
 
 // executions
 app.use("/api/v1", userRouter);
 app.use("/api/v1", patientRouter);
 app.use("/api/v1", doctortRouter);
+app.use("/api/v1", appointmentRouter);
