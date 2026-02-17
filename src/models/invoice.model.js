@@ -5,20 +5,28 @@ const invoiceSchema = new Schema(
     patientId: {
       type: Schema.Types.ObjectId,
       ref: "Patient",
+      required: true,
     },
     appointmentId: {
       type: Schema.Types.ObjectId,
       ref: "Appointment",
+      required: true,
     },
     services: [
       {
+        serviceIds: {
+          type: Schema.Types.ObjectId,
+          ref: "Service",
+          required: true,
+        },
         name: {
           type: String,
-          default: "",
+          required: true,
         },
         price: {
           type: Number,
-          default: 0,
+          required: true,
+          min: 0,
         },
       },
     ],
@@ -34,9 +42,17 @@ const invoiceSchema = new Schema(
     partialpaidAmount: {
       type: Number,
       default: 0,
+      min: 0,
     },
   },
-  { timestamps: null },
+  { timestamps: true },
 );
+
+invoiceSchema.pre("save", function () {
+  this.totalAmount = this.services.reduce(
+    (sum, service) => sum + service.price,
+    0,
+  );
+});
 
 export const InvoiceModel = mongoose.model("Invoice", invoiceSchema);
